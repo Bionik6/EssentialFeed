@@ -1,5 +1,5 @@
 import XCTest
-@testable import EssentialFeed
+import EssentialFeed
 
 
 final class RemoteFeedLoaderTests: XCTestCase {
@@ -10,7 +10,7 @@ final class RemoteFeedLoaderTests: XCTestCase {
     XCTAssertNil(client.requestedURL)
   }
   
-  func test_load_request_dataFromURL() {
+  func test_load_requests_data_from_url() {
     let url = URL(string: "https://a-given-url")!
     let (sut, client) = makeSUT(url: url)
     
