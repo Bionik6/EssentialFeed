@@ -47,7 +47,7 @@ public final class RemoteFeedLoader {
 
 
 
-private class FeedItemsMapper {
+private struct FeedItemsMapper {
   private struct Root: Decodable {
     private(set) var items: [Item]
   }
@@ -63,8 +63,10 @@ private class FeedItemsMapper {
     }
   }
   
+  static var OK_200 = 200
+  
   static func map(_ data: Data, _ response: HTTPURLResponse) throws -> [FeedItem] {
-    guard response.statusCode == 200 else {
+    guard response.statusCode == OK_200 else {
       throw RemoteFeedLoader.Error.invalidData
     }
     return try JSONDecoder().decode(Root.self, from: data).items.map { $0.item }
