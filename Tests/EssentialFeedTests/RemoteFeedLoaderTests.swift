@@ -31,7 +31,7 @@ final class RemoteFeedLoaderTests: XCTestCase {
   
   func test_load_delivers_error_on_client_error() {
     let (sut, client) = makeSUT()
-  
+    
     expect(sut, toCompleteWith: .failure(.connectivity), when: {
       let clientError = NSError(domain: "Test", code: 0)
       client.complete(with: clientError)
@@ -67,6 +67,37 @@ final class RemoteFeedLoaderTests: XCTestCase {
     })
   }
   
+  func test_load_delivers_with_items_on_200_http_response_with_json_items() {
+    let (sut, client) = makeSUT()
+    
+    let item1 = FeedItem(id: UUID(),
+                         description: nil,
+                         location: nil,
+                         imageURL: URL(string: "http://a-url.com")!)
+    let item1JSON = [
+      "id": item1.id.uuidString,
+      "image": item1.imageURL.absoluteString
+    ]
+    
+    let item2 = FeedItem(id: UUID(),
+                         description: "a description",
+                         location: "a location",
+                         imageURL: URL(string: "http://another-url.com")!)
+    let item2JSON = [
+      "id": item2.id.uuidString,
+      "description": item2.description,
+      "location": item2.location,
+      "image": item2.imageURL.absoluteString
+    ]
+    
+    let jsonArray = ["items": [item1JSON, item2JSON]]
+    
+    expect(sut, toCompleteWith: .success([item1, item2]), when: {
+      let json = try! JSONSerialization.data(withJSONObject: jsonArray)
+      client.complete(withStatusCode: 200, data: json)
+    })
+  }
+  
   // MARK: - Helpers
   private func makeSUT(url: URL = URL(string: "https://a-given-url")!) -> (sut: RemoteFeedLoader, client: HTTPClientSpy) {
     let client = HTTPClientSpy()
@@ -85,7 +116,7 @@ final class RemoteFeedLoaderTests: XCTestCase {
     
     XCTAssertEqual(capturedResults, [result], file: file, line: line)
   }
-   
+  
   private class HTTPClientSpy: HTTPClient {
     var requestedURLs: [URL] { return messages.map { $0.url } }
     private var messages = [(url: URL, completion: (HTTPClientResult) -> Void)]()
