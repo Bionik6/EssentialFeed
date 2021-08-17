@@ -29,5 +29,5 @@ internal struct FeedItemsMapper {
     }
     return .success(root.feed)
   }
-  
+
 }
